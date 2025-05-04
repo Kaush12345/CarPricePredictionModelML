@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head xmlns="http://www.w3.org/1999/xhtml">
+    <meta charset="UTF-8">
+    <title>Car Price Predictor</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          crossorigin="anonymous">
+
+    <!-- jQuery and Popper -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- TensorFlow.js (if used) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+</head>
+
+<body class="bg-dark">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="card mt-50 col-md-10">
+            <div class="card-header text-center">
+                <h1>Welcome to Car Price Predictor</h1>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h5>This app predicts the price of a car you want to sell. Try filling the details below:</h5>
+                </div>
+
+                <form method="post" name="Modelform">
+                    <div class="form-group">
+                        <label><b>Select the company:</b></label>
+                        <select class="form-control" id="company" name="company" required
+                                onchange="load_car_models(this.id,'car_models')">
+                            {% for company in companies %}
+                            <option value="{{ company }}">{{ company }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><b>Select the model:</b></label>
+                        <select class="form-control" id="car_models" name="car_models" required>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><b>Select Year of Purchase:</b></label>
+                        <select class="form-control" id="year" name="year" required>
+                            {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><b>Select the Fuel Type:</b></label>
+                        <select class="form-control" id="fuel_type" name="fuel_type" required>
+                            {% for fuel in fuel_types %}
+                            <option value="{{ fuel }}">{{ fuel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><b>Enter Kilometers Driven:</b></label>
+                        <input type="text" class="form-control" id="kilo_driven" name="kilo_driven"
+                               placeholder="e.g., 50000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
+                    </div>
+                </form>
+
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <h4><span id="prediction"></span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function load_car_models(company_id, car_model_id) {
+        var company = document.getElementById(company_id);
+        var car_model = document.getElementById(car_model_id);
+        car_model.value = "";
+        car_model.innerHTML = "";
+
+        {% for company in companies %}
+        if (company.value == "{{ company }}") {
+            {% for model in car_models %}
+            {% if company in model %}
+            var newOption = document.createElement("option");
+            newOption.value = "{{ model }}";
+            newOption.innerHTML = "{{ model }}";
+            car_model.options.add(newOption);
+            {% endif %}
+            {% endfor %}
+        }
+        {% endfor %}
+    }
+
+    function send_data() {
+        var fd = new FormData(document.querySelector('form'));
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/predict', true);
+
+        document.getElementById('prediction').innerHTML = "Wait! Predicting Price.....";
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                document.getElementById('prediction').innerHTML = "Prediction: ₹" + xhr.responseText;
+            }
+        };
+
+        xhr.send(fd);
+    }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
